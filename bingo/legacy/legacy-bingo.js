@@ -15,11 +15,13 @@ var goallist_7_1 = require('./goallists/goal-list-7.1');
 var goallist_8_0 = require('./goallists/goal-list-8.0');
 var goallist_8_1 = require('./goallists/goal-list-8.1');
 var goallist_8_2 = require('./goallists/goal-list-8.2');
+var goallist_8_3 = require('./goallists/goal-list-8.3');
+var goallist_8_4 = require('./goallists/goal-list-8.4');
 
-var ApiError = require('../lib/error').ApiError;
+var ApiError = require('../../lib/error').ApiError;
 
 
-var currentVersion = 'v8.2';
+var currentVersion = 'v8.4';
 
 
 exports.getCard = function(opts, cb) {
@@ -72,14 +74,24 @@ exports.getCard = function(opts, cb) {
 		case 'v8.2':
 			bingoBoard = generator_8_2(goallist_8_2, standardOpts);
 			break;
+		case 'v8.3':
+			bingoBoard = generator_8_2(goallist_8_3, standardOpts);
+			break;
+		case 'v8.4':
+			bingoBoard = generator_8_2(goallist_8_4, standardOpts);
+			break;
 		default:
 			return cb(new ApiError('BAD_REQUEST', 'Unrecognized version in bingo options'));
 	}
-
+	bingoBoard = bingoBoard.map(function(square) {
+		if(!square.id && square.name) square.id = square.name.toLowerCase().split(' ').join('-');
+		return square;
+	});
 	cb(null, {
 		seed: seed,
 		mode: mode,
 		version: version,
+		size: 5,
 		goals: bingoBoard
 	});
 };

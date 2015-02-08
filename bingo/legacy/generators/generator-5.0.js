@@ -1,4 +1,4 @@
-var seedRandom = require('../../lib/random-seeded');
+var seedRandom = require('../../../lib/random-seeded');
 
 module.exports = function(bingoList, opts) {
 	if(!opts) opts = {};

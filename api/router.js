@@ -1,4 +1,4 @@
-var bingo = require('../bingo/bingo');
+var legacyBingo = require('../bingo/legacy/legacy-bingo');
 var async = require('async');
 var ApiError = require('../lib/error').ApiError;
 
@@ -7,7 +7,7 @@ exports.setup = function(app) {
 	app.registerApiRoute = function() {
 
 		function invalidRegister() {
-			console.log('Invalid call to app.registerAPiRoute');
+			console.log('Invalid call to app.registerApiRoute');
 			process.exit(1);
 		}
 
@@ -64,7 +64,7 @@ exports.setup = function(app) {
 		return card;
 	}
 
-	function bingoParams(req) {
+	function legacyBingoParams(req) {
 		var params = {};
 		if(req.query['seed']) {
 			params.seed = req.query['seed'];
@@ -75,43 +75,60 @@ exports.setup = function(app) {
 		return params;
 	}
 
-	//Register some test routes (will be broken up better later)
-	app.registerApiRoute('bingo/card', 'GET', function(req,res) {
-		var opts = bingoParams(req);
-		if(!opts.seed) opts.seed = Math.ceil(Math.random()*1000000).toString();
 
-		bingo.getCard(opts, function(error, card) {
-			if(error) return res.error(500, error);
-			card = prettifyCard(card, {nameOnly: true});
+
+	// Get a current bingo card. Still will call out to legacy because current version still uses it.
+	// This route will need to be continuously updated with each version until we get a better update system rolling.
+	app.registerApiRoute('bingo/card', 'GET', function(req, res) {
+		var opts = legacyBingoParams(req);
+		if(!opts.seed) opts.seed = Math.ceil(Math.random()*1000000).toString();
+		if(opts.version) return res.error(new ApiError('BAD_REQUEST', 'Cannot pass version'));
+
+		legacyBingo.getCard(opts, function(error, card) {
+			if(error) return res.error(error);
+			card = prettifyCard(card);
+			res.result(card);
+		});
+	});
+
+	app.registerApiRoute('bingo/legacy/card', 'GET', function(req,res) {
+		var opts = legacyBingoParams(req);
+		if(!opts.seed) opts.seed = Math.ceil(Math.random()*1000000).toString();
+		if(!opts.version) return res.error(new ApiError('BAD_REQUEST', 'Version is a required parameter'));
+
+		legacyBingo.getCard(opts, function(error, card) {
+			if(error) return res.error(error);
+			card = prettifyCard(card);
 			res.result(card);
 		});
 	});
 
 	//Get a card suitable for blackout (eg no duplcate goals)
 	app.registerApiRoute('bingo/card/blackout', 'GET', function(req,res) {
-
-		var opts = bingoParams(req);
+		var opts = legacyBingoParams(req);
 		var attempts = 0;
 		if(opts.seed) return res.error(new ApiError('BAD_REQUEST', 'Blackout route does not accept a seed parameter'));
+		if(opts.version) return res.error(new ApiError('BAD_REQUEST', 'Blackout route does not accept a version parameter'));
 		var teamSize = req.query['teamSize'] || undefined;
 		if(teamSize) {
 			teamSize = parseInt(teamSize, 10);
 			if(isNaN(teamSize)) return res.error(new ApiError('BAD_REQUEST', 'teamSize parameter not understood'));
 		}
+
 		var theCard;
 		async.doWhilst(function(cb) {
 			attempts++;
 			if(attempts > 50) return cb(new ApiError('INTERNAL_ERROR', 'Maximum number of card attempts exceeded'));
-			bingo.getCard(opts, function(error, card) {
+			legacyBingo.getCard(opts, function(error, card) {
 				if(error) return cb(error);
 				theCard = card;
 				cb();
 			});
 		}, function() {
-			return !bingo.isBlackoutFriendly(theCard, teamSize);
+			return !legacyBingo.isBlackoutFriendly(theCard, teamSize);
 		}, function(error) {
 			if(error) return res.error(error);
-			card = prettifyCard(theCard, {nameOnly: true});
+			card = prettifyCard(theCard);
 			res.result(card);
 		});
 	});

@@ -1,4 +1,4 @@
-var seedRandom = require('../../lib/random-seeded');
+var seedRandom = require('../../../lib/random-seeded');
 
 module.exports = function(bingoList, opts) {
 	if(!opts) opts = {};
@@ -8,57 +8,57 @@ module.exports = function(bingoList, opts) {
 	var MODE = opts.mode || 'normal';
   
 //giuocob 16-8-12: lineCheckList[] has been replaced to allow for removal of all-child rows
+//Note: the rowElements relation is simply the inverse of the rowCheckList relation
+
 var rowCheckList = [];
 var rowElements = new Object();
-var size = 5;
-if(size == 5)
-{
-	rowElements["row1"] = [1,2,3,4,5];
-	rowElements["row2"] = [6,7,8,9,10];
-	rowElements["row3"] = [11,12,13,14,15];
-	rowElements["row4"] = [16,17,18,19,20];
-	rowElements["row5"] = [21,22,23,24,25];
-	rowElements["col1"] = [1,6,11,16,21];
-	rowElements["col2"] = [2,7,12,17,22];
-	rowElements["col3"] = [3,8,13,18,23];
-	rowElements["col4"] = [4,9,14,19,24];
-	rowElements["col5"] = [5,10,15,20,25];
-	rowElements["tlbr"] = [1,7,13,19,25];
-	rowElements["bltr"] = [5,9,13,17,21];
-	
-	rowCheckList[1] = ["row1","col1","tlbr"];
-	rowCheckList[2] = ["row1","col2"];
-	rowCheckList[3] = ["row1","col3"];
-	rowCheckList[4] = ["row1","col4"];
-	rowCheckList[5] = ["row1","col5","bltr"];
-	
-	rowCheckList[6] = ["row2","col1"];
-	rowCheckList[7] = ["row2","col2","tlbr"];
-	rowCheckList[8] = ["row2","col3"];
-	rowCheckList[9] = ["row2","col4","bltr"];
-	rowCheckList[10] = ["row2","col5"];
-	
-	rowCheckList[11] = ["row3","col1"];
-	rowCheckList[12] = ["row3","col2"];
-	rowCheckList[13] = ["row3","col3","tlbr","bltr"];
-	rowCheckList[14] = ["row3","col4"];
-	rowCheckList[15] = ["row3","col5"];
-	
-	rowCheckList[16] = ["row4","col1"];
-	rowCheckList[17] = ["row4","col2","bltr"];
-	rowCheckList[18] = ["row4","col3"];
-	rowCheckList[19] = ["row4","col4","tlbr"];
-	rowCheckList[20] = ["row4","col5"];
-	
-	rowCheckList[21] = ["row5","col1","bltr"];
-	rowCheckList[22] = ["row5","col2"];
-	rowCheckList[23] = ["row5","col3"];
-	rowCheckList[24] = ["row5","col4"];
-	rowCheckList[25] = ["row5","col5","tlbr"];
-}
 
+rowElements["row1"] = [1,2,3,4,5];
+rowElements["row2"] = [6,7,8,9,10];
+rowElements["row3"] = [11,12,13,14,15];
+rowElements["row4"] = [16,17,18,19,20];
+rowElements["row5"] = [21,22,23,24,25];
+rowElements["col1"] = [1,6,11,16,21];
+rowElements["col2"] = [2,7,12,17,22];
+rowElements["col3"] = [3,8,13,18,23];
+rowElements["col4"] = [4,9,14,19,24];
+rowElements["col5"] = [5,10,15,20,25];
+rowElements["tlbr"] = [1,7,13,19,25];
+rowElements["bltr"] = [5,9,13,17,21];
+
+rowCheckList[1] = ["row1","col1","tlbr"];
+rowCheckList[2] = ["row1","col2"];
+rowCheckList[3] = ["row1","col3"];
+rowCheckList[4] = ["row1","col4"];
+rowCheckList[5] = ["row1","col5","bltr"];
+
+rowCheckList[6] = ["row2","col1"];
+rowCheckList[7] = ["row2","col2","tlbr"];
+rowCheckList[8] = ["row2","col3"];
+rowCheckList[9] = ["row2","col4","bltr"];
+rowCheckList[10] = ["row2","col5"];
+
+rowCheckList[11] = ["row3","col1"];
+rowCheckList[12] = ["row3","col2"];
+rowCheckList[13] = ["row3","col3","tlbr","bltr"];
+rowCheckList[14] = ["row3","col4"];
+rowCheckList[15] = ["row3","col5"];
+
+rowCheckList[16] = ["row4","col1"];
+rowCheckList[17] = ["row4","col2","bltr"];
+rowCheckList[18] = ["row4","col3"];
+rowCheckList[19] = ["row4","col4","tlbr"];
+rowCheckList[20] = ["row4","col5"];
+
+rowCheckList[21] = ["row5","col1","bltr"];
+rowCheckList[22] = ["row5","col2"];
+rowCheckList[23] = ["row5","col3"];
+rowCheckList[24] = ["row5","col4"];
+rowCheckList[25] = ["row5","col5","tlbr"];
+
+ 
 function mirror(i) {
-	if      (i == 0) { i = 4; }
+	if      (i === 0) { i = 4; }
 	else if (i == 1) { i = 3; }
 	else if (i == 3) { i = 1; }
 	else if (i == 4) { i = 0; }
@@ -95,7 +95,7 @@ function difficulty(i) {
 	Rem2 = Rem8%2;
 	Rem5 = Num3%5;
 	Rem3 = Num3%3;
-	RemT = RemT * 8 + Math.floor(Num3/120);	 // This is between 0 and 64.
+	RemT = RemT * 8 + Math.floor(Num3/120);	// This is between 0 and 64.
 
 	var Table1 = [0];
 	Table1.splice(Rem2, 0, 1);
@@ -118,22 +118,42 @@ function difficulty(i) {
 	value = 5*e5 + e1;
 
 	if (MODE == "short") { value = Math.floor(value/2); } // if short mode, limit difficulty
-    	else if (MODE == "long") { value = Math.floor((value + 25) / 2); }
-    	value++;
+    else if (MODE == "long") { value = Math.floor((value + 25) / 2); }
+	value++;
 	return value;
 }
 
+//Uniformly shuffles an array (note: the original array will be changed)
+function shuffle(toShuffle)
+{
+	for(var i=0;i<toShuffle.length;i++)
+	{
+		var randElement = Math.floor(rng.random()*(i+1));
+		var temp = toShuffle[i];
+		toShuffle[i] = toShuffle[randElement];
+		toShuffle[randElement] = temp;
+	}
+}
+
+//Get a uniformly shuffled array of all the goals of a given difficulty tier
 function getShuffledGoals(difficulty)
 {
 	var newArray = bingoList[difficulty].slice();
-	for(var i=0;i<newArray.length;i++)
-	{
-		var randElement = Math.floor(rng.random()*(i+1));
-		var temp = newArray[i];
-		newArray[i] = newArray[randElement];
-		newArray[randElement] = temp;
-	}
+	shuffle(newArray);
 	return newArray;
+}
+
+//Given a difficulty as an argument, find the square that contains that difficulty
+function getDifficultyIndex(difficulty)
+{
+	for(var i=1;i<=25;i++)
+	{
+		if(bingoBoard[i].difficulty == difficulty)
+		{
+			return i;
+		}
+	}
+	return 0;
 }
   
 
@@ -160,8 +180,8 @@ function checkLine(i, testsquare)
 						if(typesA[n] == typesB[p])
 						{
 							synergy++; //if match increase
-							if(n==0) { synergy++ }; //if main type increase
-							if(p==0) { synergy++ }; //if main type increase
+							if(n===0) synergy++;	// if main type increase
+							if(p===0) synergy++;	// if main type increase
 						}
 					}
 				}
@@ -212,22 +232,51 @@ function checkLine(i, testsquare)
 	}
   }                                          // in order 1-25
   
+  
+    //giuocob 19-2-13: bingoBoard is no longer populated left to right:
+    //It is now populated mostly randomly, with high difficult goals and
+    //goals on the diagonals out in front
+    var populationOrder = [];
+    populationOrder[1] = 13;   //Populate center first
+    var diagonals = [1,7,19,25,5,9,17,21];
+    shuffle(diagonals);
+    populationOrder = populationOrder.concat(diagonals);   //Next populate diagonals
+    var nondiagonals = [2,3,4,6,8,10,11,12,14,15,16,18,20,22,23,24];
+    shuffle(nondiagonals);
+    populationOrder = populationOrder.concat(nondiagonals);   //Finally add the rest of the squares
+    //Lastly, find location of difficulty 23,24,25 elements and put them out front
+    for(var k=23;k<=25;k++)
+    {
+		var currentSquare = getDifficultyIndex(k);
+		if(currentSquare === 0) continue;
+		for(var p=1;p<25;p++)
+		{
+			if(populationOrder[p] == currentSquare)
+			{
+				populationOrder.splice(p,1);
+				break;
+			}
+		}
+		populationOrder.splice(1,0,currentSquare);
+	}
+
+    
+  
     //Populate the bingo board in the array
     //giuocob 16-8-12: changed this section to:
     //1. Support uniform goal selection by shuffling arrays before checking goals
     //2. Remove all child rows by checking child tag
     //3. If no goal is suitable, instead of choosing goal with lowest synergy, now next difficulty up is checked
-    //   Silly 26-difficulty goals have been added that appear only if the generator runs out of viable goals
-    //   (aka a defect in the goal list)
     for(var i=1;i<=25;i++)
     {
-		var getDifficulty = bingoBoard[i].difficulty;
+		var sq = populationOrder[i];
+		var getDifficulty = bingoBoard[sq].difficulty;
 		var goalArray = getShuffledGoals(getDifficulty);
 		var j=0, synergy=0, currentObj=null, minSynObj=null;
 		do
 		{
 			currentObj = goalArray[j];
-			synergy = checkLine(i,currentObj);
+			synergy = checkLine(sq,currentObj);
 			if(minSynObj == null || synergy < minSynObj.synergy)
 			{
 				minSynObj = {synergy: synergy, value: currentObj};
@@ -246,17 +295,16 @@ function checkLine(i, testsquare)
 				    j = 0;
 				}
 			}
-		} while(synergy != 0);   //Perhaps increase to 1 if difficulty increases happen too often
+		} while(synergy !== 0);   //Perhaps increase to 1 if difficulty increases happen too often
 		
     
-    bingoBoard[i].types = minSynObj.value.types;
-    bingoBoard[i].name = minSynObj.value[LANG] || minSynObj.value.name;
-    bingoBoard[i].child = minSynObj.value.child;
-    bingoBoard[i].synergy = minSynObj.synergy;
+    bingoBoard[sq].types = minSynObj.value.types;
+    bingoBoard[sq].name = minSynObj.value[LANG] || minSynObj.value.name;
+    bingoBoard[sq].child = minSynObj.value.child;
+    bingoBoard[sq].synergy = minSynObj.synergy;
   }
   
-  bingoBoard.shift();
+  bingoBoard.shift();   //Get rid of useless null square
   return bingoBoard;
-  
   
 };

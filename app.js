@@ -51,6 +51,7 @@ app.use(function(req, res, next) {
 			if(error.data) responseObject.data = error.data;
 		}
 
+		responseObject.error = true;
 		this.status(httpStatus).json(responseObject);
 	};
 
