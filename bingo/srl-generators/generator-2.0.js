@@ -1,4 +1,4 @@
-var seedRandom = require('../../../lib/random-seeded');
+var seedRandom = require('../../lib/random-seeded');
 
 module.exports = function(bingoList, opts) {
   if(!opts) opts = {};
@@ -21,11 +21,11 @@ module.exports = function(bingoList, opts) {
       var seed5 = Math.floor(seed4);
       item[i] = seed5 % ITEMTOTAL;
       item[i]++;
-      
+
       for (j=1; j<i; j++) {
         if (item[i] == item[j]) {
           for (k=1; k<i; k++) {
-            while (item[i] == item[k]) { 
+            while (item[i] == item[k]) {
               //var results2 = $('<p>fixing duplicate "' + item[i] + '" in item' + i + '.</p>');
               //display.append(results2);
               if (item[i] == 64) {
@@ -46,10 +46,10 @@ module.exports = function(bingoList, opts) {
       item[i] = seed5 % 11;
       item[i] += 66;
 
-      for (j=1; j<i; j++) {    
-        if (item[i] == item[j]) { 
+      for (j=1; j<i; j++) {
+        if (item[i] == item[j]) {
           for (k=1; k<i; k++) {
-            while (item[i] == item[k]) { 
+            while (item[i] == item[k]) {
               //var results2 = $('<p>fixing duplicate "' + item[i] + '" in item' + i + '.</p>');
               //display.append(results2);
               if (item[i] == 76) {
@@ -62,7 +62,7 @@ module.exports = function(bingoList, opts) {
             }
           }
         }
-      }      
+      }
     }
 
     var results3 = findItem(item[i], i);
@@ -75,9 +75,9 @@ module.exports = function(bingoList, opts) {
 
 
 function findItem( itemNo, i ) {
-    
+
     var itemText = "";
-    
+
     switch (itemNo) {
     case 1:
       itemText = "Nocturne of Shadow";
@@ -150,7 +150,7 @@ function findItem( itemNo, i ) {
       case 1:
         itemText = "30 Gold Skulltulas";
         break;
-      } 
+      }
       break;
     case 11:
       itemText = "All Skulltulas in Deku Tree";
@@ -293,13 +293,13 @@ function findItem( itemNo, i ) {
       itemText = "Mirror Shield";
       break;
     case 44:
-      itemText = "Double Magic"; 
+      itemText = "Double Magic";
       break;
     case 45:
       itemText = "Saria's Song";
       break;
     case 46:
-      itemText = "Double Defense"; 
+      itemText = "Double Defense";
       break;
     case 47:
       itemText = "Zelda's Lullaby";

@@ -1,4 +1,4 @@
-var legacyBingo = require('../bingo/legacy/legacy-bingo');
+var ootStandardBingo = require('../bingo/oot-standard');
 var async = require('async');
 var ApiError = require('../lib/error').ApiError;
 
@@ -64,7 +64,7 @@ exports.setup = function(app) {
 		return card;
 	}
 
-	function legacyBingoParams(req) {
+	function bingoParams(req) {
 		var params = {};
 		if(req.query['seed']) {
 			params.seed = req.query['seed'];
@@ -77,26 +77,12 @@ exports.setup = function(app) {
 
 
 
-	// Get a current bingo card. Still will call out to legacy because current version still uses it.
-	// This route will need to be continuously updated with each version until we get a better update system rolling.
-	app.registerApiRoute('bingo/card', 'GET', function(req, res) {
-		var opts = legacyBingoParams(req);
+	app.registerApiRoute('bingo/oot/standard/get-card', 'GET', function(req,res) {
+		var opts = bingoParams(req);
 		if(!opts.seed) opts.seed = Math.ceil(Math.random()*1000000).toString();
-		if(opts.version) return res.error(new ApiError('BAD_REQUEST', 'Cannot pass version'));
+		//if(!opts.version) opts.version = ootStandardBingo.currentVersion;
 
-		legacyBingo.getCard(opts, function(error, card) {
-			if(error) return res.error(error);
-			card = prettifyCard(card);
-			res.result(card);
-		});
-	});
-
-	app.registerApiRoute('bingo/legacy/card', 'GET', function(req,res) {
-		var opts = legacyBingoParams(req);
-		if(!opts.seed) opts.seed = Math.ceil(Math.random()*1000000).toString();
-		if(!opts.version) return res.error(new ApiError('BAD_REQUEST', 'Version is a required parameter'));
-
-		legacyBingo.getCard(opts, function(error, card) {
+		ootStandardBingo.getCard(opts, function(error, card) {
 			if(error) return res.error(error);
 			card = prettifyCard(card);
 			res.result(card);
@@ -104,8 +90,8 @@ exports.setup = function(app) {
 	});
 
 	//Get a card suitable for blackout (eg no duplcate goals)
-	app.registerApiRoute('bingo/card/blackout', 'GET', function(req,res) {
-		var opts = legacyBingoParams(req);
+	app.registerApiRoute('bingo/oot/standard/find-blackout-card', 'GET', function(req,res) {
+		var opts = bingoParams(req);
 		var attempts = 0;
 		if(opts.seed) return res.error(new ApiError('BAD_REQUEST', 'Blackout route does not accept a seed parameter'));
 		if(opts.version) return res.error(new ApiError('BAD_REQUEST', 'Blackout route does not accept a version parameter'));
@@ -119,17 +105,24 @@ exports.setup = function(app) {
 		async.doWhilst(function(cb) {
 			attempts++;
 			if(attempts > 50) return cb(new ApiError('INTERNAL_ERROR', 'Maximum number of card attempts exceeded'));
-			legacyBingo.getCard(opts, function(error, card) {
+			ootStandardBingo.getCard(opts, function(error, card) {
 				if(error) return cb(error);
 				theCard = card;
 				cb();
 			});
 		}, function() {
-			return !legacyBingo.isBlackoutFriendly(theCard, teamSize);
+			return !ootStandardBingo.isBlackoutFriendly(theCard, teamSize);
 		}, function(error) {
 			if(error) return res.error(error);
 			card = prettifyCard(theCard);
 			res.result(card);
 		});
+	});
+
+	app.registerApiRoute('bingo/oot/standard/metadata', 'GET', function(req, res) {
+		var metadata = {
+			currentVersion: ootStandardBingo.currentVersion
+		};
+		res.result(metadata);
 	});
 };

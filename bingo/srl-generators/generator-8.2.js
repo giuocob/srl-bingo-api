@@ -1,4 +1,4 @@
-var seedRandom = require('../../../lib/random-seeded');
+var seedRandom = require('../../lib/random-seeded');
 
 module.exports = function(bingoList, opts) {
 	if(!opts) opts = {};
@@ -6,7 +6,7 @@ module.exports = function(bingoList, opts) {
 	var SEED = opts.seed || Math.ceil(999999 * Math.random()).toString();
 	var rng = seedRandom.getRNG(SEED);
 	var MODE = opts.mode || 'normal';
-  
+
 	//giuocob 16-8-12: lineCheckList[] has been replaced to allow for removal of all-child rows
 	//Note: the rowElements relation is simply the inverse of the rowCheckList relation
 	var rowElements = {};
@@ -53,8 +53,8 @@ module.exports = function(bingoList, opts) {
 				bingoBoard[i] = {difficulty: difficulty(i), child: "no"};
 			}
 		}                                          // in order 1-25
-	  
-	  
+
+
 	    //giuocob 19-2-13: bingoBoard is no longer populated left to right:
 	    //It is now populated mostly randomly, with high difficult goals and
 	    //goals on the diagonals out in front
@@ -82,8 +82,8 @@ module.exports = function(bingoList, opts) {
 			populationOrder.splice(1,0,currentSquare);
 		}
 
-	    
-	  
+
+
 	    //Populate the bingo board in the array
 	    //giuocob 16-8-12: changed this section to:
 	    //1. Support uniform goal selection by shuffling arrays before checking goals
@@ -118,8 +118,8 @@ module.exports = function(bingoList, opts) {
 					}
 				}
 			} while(synergy != 0);   //Perhaps increase to 1 if difficulty increases happen too often
-			
-	    
+
+
 		    bingoBoard[sq].types = minSynObj.value.types;
 		    bingoBoard[sq].subtypes = minSynObj.value.subtypes;
 		    bingoBoard[sq].name = minSynObj.value[LANG] || minSynObj.value.name;
@@ -143,7 +143,7 @@ module.exports = function(bingoList, opts) {
 		function difficulty(i) {
 			// To create the magic square we need 2 random orderings of the numbers 0, 1, 2, 3, 4.
 			// The following creates those orderings and calls them Table5 and Table1
-			
+
 			var Num3 = SEED%1000;	// Table5 will use the ones, tens, and hundreds digits.
 
 			var Rem8 = Num3%8;
@@ -151,7 +151,7 @@ module.exports = function(bingoList, opts) {
 			var Rem2 = Rem8%2;
 			var Rem5 = Num3%5;
 			var Rem3 = Num3%3;	// Note that Rem2, Rem3, Rem4, and Rem5 are mathematically independent.
-			var RemT = Math.floor(Num3/120);	// This is between 0 and 8		
+			var RemT = Math.floor(Num3/120);	// This is between 0 and 8
 
 			// The idea is to begin with an array containing a single number, 0.
 			// Each number 1 through 4 is added in a random spot in the array's current size.
@@ -230,7 +230,7 @@ module.exports = function(bingoList, opts) {
 			}
 			return 0;
 		}
-		  
+
 
 
 		function checkLine(i, testsquare)

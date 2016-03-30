@@ -1,27 +1,27 @@
-var generator_1 = require('./generators/generator-1.0');
-var generator_2 = require('./generators/generator-2.0');
-var generator_3 = require('./generators/generator-3.0');
-var generator_5 = require('./generators/generator-5.0');
-var generator_6 = require('./generators/generator-6.0');
-var generator_8 = require('./generators/generator-8.0');
-var generator_8_2 = require('./generators/generator-8.2');
+var generator_1 = require('./srl-generators/generator-1.0');
+var generator_2 = require('./srl-generators/generator-2.0');
+var generator_3 = require('./srl-generators/generator-3.0');
+var generator_5 = require('./srl-generators/generator-5.0');
+var generator_6 = require('./srl-generators/generator-6.0');
+var generator_8 = require('./srl-generators/generator-8.0');
+var generator_8_2 = require('./srl-generators/generator-8.2');
 
-var goallist_3 = require('./goallists/goal-list-3.0');
-var goallist_4 = require('./goallists/goal-list-4.0');
-var goallist_5 = require('./goallists/goal-list-5.0');
-var goallist_6 = require('./goallists/goal-list-6.0');
-var goallist_7_0 = require('./goallists/goal-list-7.0');
-var goallist_7_1 = require('./goallists/goal-list-7.1');
-var goallist_8_0 = require('./goallists/goal-list-8.0');
-var goallist_8_1 = require('./goallists/goal-list-8.1');
-var goallist_8_2 = require('./goallists/goal-list-8.2');
-var goallist_8_3 = require('./goallists/goal-list-8.3');
-var goallist_8_4 = require('./goallists/goal-list-8.4');
+var goallist_3 = require('./oot-goallists/goal-list-3.0');
+var goallist_4 = require('./oot-goallists/goal-list-4.0');
+var goallist_5 = require('./oot-goallists/goal-list-5.0');
+var goallist_6 = require('./oot-goallists/goal-list-6.0');
+var goallist_7_0 = require('./oot-goallists/goal-list-7.0');
+var goallist_7_1 = require('./oot-goallists/goal-list-7.1');
+var goallist_8_0 = require('./oot-goallists/goal-list-8.0');
+var goallist_8_1 = require('./oot-goallists/goal-list-8.1');
+var goallist_8_2 = require('./oot-goallists/goal-list-8.2');
+var goallist_8_3 = require('./oot-goallists/goal-list-8.3');
+var goallist_8_4 = require('./oot-goallists/goal-list-8.4');
 
-var ApiError = require('../../lib/error').ApiError;
+var ApiError = require('../lib/error').ApiError;
 
 
-var currentVersion = 'v8.4';
+var currentVersion = exports.currentVersion = 'v8.4';
 
 
 exports.getCard = function(opts, cb) {
@@ -175,7 +175,7 @@ exports.isBlackoutFriendly = function(card, teamSize) {
 			}
 		}
 	}
-	
+
 	//Now run restriction checks
 	function cardHasGoal(goal) {
 		for(var i=0;i<goals.length;i++) {

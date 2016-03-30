@@ -1,4 +1,4 @@
-var seedRandom = require('../../../lib/random-seeded');
+var seedRandom = require('../../lib/random-seeded');
 
 module.exports = function(bingoList, opts) {
   if(!opts) opts = {};
@@ -6,10 +6,10 @@ module.exports = function(bingoList, opts) {
   var SEED = opts.seed || Math.ceil(999999 * Math.random()).toString();
   var rng = seedRandom.getRNG(SEED);
   var MODE = opts.mode || 'normal';
-	
+
 	//The original item list!
 	//Link: http://zeldaspeedrun.dreamhosters.com/junk/zsrbingo_old.jpg
-	
+
 	var staticList = [
 		['Silver Gauntlets', 'Ice Arrow', 'Lon Lon Milk', 'Fairy Bow', 'Mask of Truth', 'Blue Fire', 'Nayru\'s Love'],
 		['Goron Ruby', 'Bottled Big Poe', 'Stone of Agony', 'Farore\'s Wind', 'Goron Bracelet', 'Water Medallion', 'Fire Arrow'],
@@ -19,10 +19,10 @@ module.exports = function(bingoList, opts) {
 		['At least 1 Magic Bean', 'Green Potion', 'Goron Tunic', 'Spirit Medallion', 'Longshot', 'Fairy Slingshot', 'Bomb Bag (40)'],
 		['Serenade of Water', 'Ocarina of Time', 'Minuet of Forest', 'Megaton Hammer', 'Bolero of Fire', 'Shadow Medallion', 'Giant\'s Wallet']
 	];
-	
+
 	var offset1 = Math.floor(rng.random() * 3);
 	var offset2 = Math.floor(rng.random() * 3);
-	
+
 	var bingoBoard = [];
 	for(var m=0;m<=4;m++) {
 		for(var n=0;n<=4;n++) {
@@ -32,5 +32,5 @@ module.exports = function(bingoList, opts) {
 	}
 	bingoBoard.shift();
 	return bingoBoard;
-	
+
 };
