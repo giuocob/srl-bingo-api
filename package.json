@@ -1,15 +1,16 @@
 {
-	"name": "giu-api",
-	"version": "0.0.1",
-	"private": true,
-	"dependencies": {
-		"express": "4.11.1",
-		"body-parser": "1.10.2",
-		"async": "*"
-	},
-	"devDependencies": {
-		"grunt": "~0.4.5",
-		"grunt-contrib-less": "~0.11.3",
-		"grunt-contrib-copy": "~0.5.0"
-	}
+  "name": "giu-api",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "async": "*",
+    "body-parser": "1.10.2",
+    "express": "4.11.1",
+    "xerror": "^1.1.1"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-less": "~0.11.3",
+    "grunt-contrib-copy": "~0.5.0"
+  }
 }

@@ -1,6 +1,6 @@
 var ootStandardBingo = require('../bingo/oot-standard');
 var async = require('async');
-var ApiError = require('../lib/error').ApiError;
+var XError = require('xerror');
 
 exports.setup = function(app) {
 
@@ -93,18 +93,18 @@ exports.setup = function(app) {
 	app.registerApiRoute('bingo/oot/standard/find-blackout-card', 'GET', function(req,res) {
 		var opts = bingoParams(req);
 		var attempts = 0;
-		if(opts.seed) return res.error(new ApiError('BAD_REQUEST', 'Blackout route does not accept a seed parameter'));
-		if(opts.version) return res.error(new ApiError('BAD_REQUEST', 'Blackout route does not accept a version parameter'));
+		if(opts.seed) return res.error(new XError(XError.BAD_REQUEST, 'Blackout route does not accept a seed parameter'));
+		if(opts.version) return res.error(new XError(XError.BAD_REQUEST, 'Blackout route does not accept a version parameter'));
 		var teamSize = req.query['teamSize'] || undefined;
 		if(teamSize) {
 			teamSize = parseInt(teamSize, 10);
-			if(isNaN(teamSize)) return res.error(new ApiError('BAD_REQUEST', 'teamSize parameter not understood'));
+			if(isNaN(teamSize)) return res.error(new XError(XError.BAD_REQUEST, 'teamSize parameter not understood'));
 		}
 
 		var theCard;
 		async.doWhilst(function(cb) {
 			attempts++;
-			if(attempts > 50) return cb(new ApiError('INTERNAL_ERROR', 'Maximum number of card attempts exceeded'));
+			if(attempts > 50) return cb(new XError(XError.INTERNAL_ERROR, 'Maximum number of card attempts exceeded'));
 			ootStandardBingo.getCard(opts, function(error, card) {
 				if(error) return cb(error);
 				theCard = card;

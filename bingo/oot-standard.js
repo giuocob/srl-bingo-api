@@ -19,7 +19,7 @@ var goallist_8_3 = require('./oot-goallists/goal-list-8.3');
 var goallist_8_4 = require('./oot-goallists/goal-list-8.4');
 var goallist_8_5 = require('./oot-goallists/goal-list-8.5');
 
-var ApiError = require('../lib/error').ApiError;
+var XError = require('xerror');
 
 
 var currentVersion = exports.currentVersion = 'v8.5';
@@ -31,7 +31,7 @@ exports.getCard = function(opts, cb) {
 	if(typeof seed == 'number') seed = seed.toString();
 	var mode = opts.mode || 'normal';
 	var validModes = {'short': true, 'normal': true, 'long': true};
-	if(!validModes[mode]) return cb(new ApiError('BAD_REQUEST', 'Unrecognized mode in bingo options'));
+	if(!validModes[mode]) return cb(new XError(XError.BAD_REQUEST, 'Unrecognized mode in bingo options'));
 	var version = opts.version || currentVersion;
 
 	var standardOpts = {
@@ -85,7 +85,7 @@ exports.getCard = function(opts, cb) {
 			bingoBoard = generator_8_2(goallist_8_5, standardOpts);
 			break;
 		default:
-			return cb(new ApiError('BAD_REQUEST', 'Unrecognized version in bingo options'));
+			return cb(new XError(XError.BAD_REQUEST, 'Unrecognized version in bingo options'));
 	}
 	bingoBoard = bingoBoard.map(function(square) {
 		if(!square.id && square.name) square.id = square.name.toLowerCase().split(' ').join('-');

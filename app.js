@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var port = process.env.PORT || 17888;
 var path = require('path');
+var XError = require('xerror');
 
 app.set('port', port);
 app.use(bodyParser.json());
@@ -20,7 +21,6 @@ app.use(function(req, res, next) {
 });
 
 // Add res.error and res.result functions, to be used to return from api endpoints
-var errorLib = require('./lib/error');
 app.use(function(req, res, next) {
 	res.result = function(result) {
 		var responseObject = { success: true };
@@ -37,18 +37,14 @@ app.use(function(req, res, next) {
 	};
 
 	res.error = function(error) {
-		var httpStatus = 500, responseObject = { code: 'INTERNAL_ERROR' };
-		if(error && error instanceof errorLib.ApiError) {
+		var httpStatus = 500, responseObject = { code: XError.INTERNAL_ERROR };
+		if(error && XError.isXError(error)) {
 			if(error.code) {
 				responseObject.code = error.code;
-				var errorDefaults = errorLib.errorCodes[error.code];
-				if(errorDefaults) {
-					if(errorDefaults.status) httpStatus = errorDefaults.status;
-					if(errorDefaults.message) responseObject.message = errorDefaults.message;
-				}
 			}
 			if(error.message) responseObject.message = error.message;
 			if(error.data) responseObject.data = error.data;
+			if(error.http) httpStatus = error.http;
 		}
 
 		responseObject.error = true;
