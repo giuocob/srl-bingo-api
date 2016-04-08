@@ -19,6 +19,9 @@ var goallist_8_3 = require('./oot-goallists/goal-list-8.3');
 var goallist_8_4 = require('./oot-goallists/goal-list-8.4');
 var goallist_8_5 = require('./oot-goallists/goal-list-8.5');
 
+var generator_9_tmp = require('./srl-generators/generator-9.0-tmp');
+var goallist_9_tmp = require('./oot-goallists/goal-list-9.0-tmp');
+
 var XError = require('xerror');
 
 
@@ -83,6 +86,11 @@ exports.getCard = function(opts, cb) {
 			break;
 		case 'v8.5':
 			bingoBoard = generator_8_2(goallist_8_5, standardOpts);
+			break;
+		case 'v9tmp':
+			bingoBoard = generator_9_tmp(goallist_9_tmp, standardOpts);
+			// 1 indexed
+			bingoBoard = bingoBoard.slice(1);
 			break;
 		default:
 			return cb(new XError(XError.BAD_REQUEST, 'Unrecognized version in bingo options'));
