@@ -33,8 +33,8 @@ Array.prototype.sortNumerically = function() {
     });
 };
 
-Array.prototype.shuffled = function(rng) {
-    var toShuffle = this.slice();
+function shuffle(arr, rng) {
+    var toShuffle = arr.slice();
     for (var i = 0; i < toShuffle.length; i++) {
         var randElement = Math.floor(rng.random() * (i + 1));
         var temp = toShuffle[i];
@@ -42,7 +42,7 @@ Array.prototype.shuffled = function(rng) {
         toShuffle[randElement] = temp;
     }
     return toShuffle;
-};
+}
 
 function hasDuplicateStrings(array) {
     var seen = {};
@@ -111,15 +111,7 @@ var BingoGenerator = function(bingoList, options) {
             return timeDiff;
         }
 
-        if (a.id > b.id) {
-            return 1;
-        }
-        else if (a.id < b.id) {
-            return -1;
-        }
-        else {
-            return 0;
-        }
+        return a.id.localeCompare(b.id);
     });
 
     this.goalsByName = {};
@@ -208,17 +200,11 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
         var maxTime = desiredTime + offset;
 
         var goalsAtTime = this.getGoalsInTimeRange(minTime, maxTime);
-        goalsAtTime = goalsAtTime.shuffled(this.rng);
+        goalsAtTime = shuffle(goalsAtTime, this.rng);
 
         // scan through each goal at this difficulty level
         for (var j = 0; j < goalsAtTime.length; j++) {
             var goal = goalsAtTime[j];
-
-            // don't allow duplicates of goals
-            if (this.hasGoalOnBoard(goal)) {
-                continue;
-            }
-
             var synergies = this.checkLine(position, goal);
 
             if (this.maximumSynergy >= synergies.maxSynergy && synergies.minSynergy >= this.minimumSynergy) {
@@ -244,11 +230,11 @@ BingoGenerator.prototype.generatePopulationOrder = function() {
     populationOrder[1] = 13;
 
     //Next populate diagonals
-    var diagonals = [1, 7, 19, 25, 5, 9, 17, 21].shuffled(this.rng);
+    var diagonals = shuffle([1, 7, 19, 25, 5, 9, 17, 21], this.rng);
     populationOrder = populationOrder.concat(diagonals);
 
     //Finally add the rest of the squares
-    var nondiagonals = [2, 3, 4, 6, 8, 10, 11, 12, 14, 15, 16, 18, 20, 22, 23, 24].shuffled(this.rng);
+    var nondiagonals = shuffle([2, 3, 4, 6, 8, 10, 11, 12, 14, 15, 16, 18, 20, 22, 23, 24], this.rng);
     populationOrder = populationOrder.concat(nondiagonals);
 
     //Lastly, find location of difficulty 23,24,25 elements and put them out front
@@ -332,7 +318,7 @@ BingoGenerator.prototype.difficulty = function(i) {
 
 //Get a uniformly shuffled array of all the goals of a given difficulty tier
 BingoGenerator.prototype.getShuffledGoals = function(difficulty) {
-    return this.goalsByDifficulty[difficulty].shuffled(this.rng);
+    return shuffle(this.goalsByDifficulty, this.rng);
 };
 
 //Given a difficulty as an argument, find the square that contains that difficulty
@@ -359,23 +345,6 @@ BingoGenerator.prototype.getGoalsInTimeRange = function(minTime, maxTime) {
     return this.goalsList.filter(function(goal) {
         return minTime <= goal.time && goal.time <= maxTime;
     });
-};
-
-/**
- * Returns true if the given goal has already been placed on the board.
- * Does so by checking against the ids of goals already on the board. Therefore relies on
- * different goals having different id fields.
- * @param goal  the goal to check for
- * @returns {boolean}  true if the goal is on the board, false otherwise
- */
-BingoGenerator.prototype.hasGoalOnBoard = function(goal) {
-    for (var i = 1; i <= 25; i++) {
-        if (this.bingoBoard[i].id === goal.id) {
-            return true;
-        }
-    }
-
-    return false;
 };
 
 /**
@@ -459,8 +428,6 @@ BingoGenerator.prototype.getEffectiveTypeSynergiesForRow = function(row) {
  */
 BingoGenerator.prototype.evaluateSquares = function(squares) {
     // bail out if there are duplicate goals
-    // NOTE: keep this in addition to the duplicate checking from chooseGoalForPosition
-    // because this still detects cases from hardcoded boards for analysis
     var ids = squares.map(function(el) { return el.id; }).filter(function(el) { return el; });
     if (hasDuplicateStrings(ids)) {
         return TOO_MUCH_SYNERGY;
@@ -627,7 +594,6 @@ BingoGenerator.prototype.calculateEffectiveSynergyForSquares = function(synergie
 };
 
 
-// preserve this function name for compatibility with existing code
 module.exports = function (bingoList, opts) {
 
     var bingoGenerator = new BingoGenerator(bingoList, opts);

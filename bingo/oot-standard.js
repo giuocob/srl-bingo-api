@@ -88,6 +88,7 @@ exports.getCard = function(opts, cb) {
 			bingoBoard = generator_8_2(goallist_8_5, standardOpts);
 			break;
 		case 'v9tmp':
+			delete standardOpts.mode;
 			bingoBoard = generator_9_tmp(goallist_9_tmp, standardOpts);
 			// 1 indexed
 			bingoBoard = bingoBoard.slice(1);
