@@ -1,6 +1,5 @@
 var seedRandom = require('../../lib/random-seeded');
 
-
 // 100 is way higher than would ever be allowed, so use it
 // as a signal to get out
 var TOO_MUCH_SYNERGY = 100;
@@ -96,8 +95,25 @@ var BingoGenerator = function(bingoList, options) {
         options = {};
     }
 
+    this.language = options.lang || 'name';
+    this.mode = options.mode || 'normal';
+    this.seed = options.seed || Math.ceil(999999 * Math.random()).toString();
+
+    if (bingoList.info && bingoList.info.combined === 'true') {
+        if (bingoList[this.mode]) {
+            bingoList = bingoList[this.mode];
+        }
+        else if (bingoList["normal"]) {
+            bingoList = bingoList["normal"];
+        }
+        else {
+            console.log("bingoList doesn't contain a valid sub goal list for mode: \"" + this.mode + "\"");
+        }
+    }
+
     this.goalsByDifficulty = bingoList;
     this.rowtypeTimeSave = bingoList.rowtypes;
+    this.synergyFilters = bingoList.synfilters || {};
 
     // assemble a list of all goals sorted by the goals' times
     this.goalsList = [];
@@ -111,7 +127,15 @@ var BingoGenerator = function(bingoList, options) {
             return timeDiff;
         }
 
-        return a.id.localeCompare(b.id);
+        if (a.id > b.id) {
+            return 1;
+        }
+        else if (a.id < b.id) {
+            return -1;
+        }
+        else {
+            return 0;
+        }
     });
 
     this.goalsByName = {};
@@ -120,9 +144,15 @@ var BingoGenerator = function(bingoList, options) {
         this.goalsByName[goal.name] = goal;
     }
 
-    this.language = options.lang || 'name';
-    this.mode = options.mode || 'normal';
-    this.seed = options.seed || Math.ceil(999999 * Math.random()).toString();
+    // set different defaults for short
+    if (this.mode === 'short') {
+        options.maximumSynergy = options.maximumSynergy || 3;
+        options.baselineTime = options.baselineTime || 12;
+        options.timePerDifficulty = options.timePerDifficulty || 0.5;
+    }
+    
+    this.baselineTime = options.baselineTime || BASELINE_TIME;
+    this.timePerDifficulty = options.timePerDifficulty || TIME_PER_DIFFICULTY;
 
     this.minimumSynergy = options.minimumSynergy || DEFAULT_MINIMUM_SYNERGY;
     this.maximumSynergy = options.maximumSynergy || DEFAULT_MAXIMUM_SYNERGY;
@@ -177,7 +207,7 @@ BingoGenerator.prototype.generateMagicSquare = function() {
 
         magicSquare[i] = {
             difficulty: difficulty,
-            desiredTime: difficulty * TIME_PER_DIFFICULTY
+            desiredTime: difficulty * this.timePerDifficulty
         };
     }
 
@@ -192,7 +222,7 @@ BingoGenerator.prototype.generateMagicSquare = function() {
  */
 BingoGenerator.prototype.chooseGoalForPosition = function(position) {
     var desiredDifficulty = this.bingoBoard[position].difficulty;
-    var desiredTime = desiredDifficulty * TIME_PER_DIFFICULTY;
+    var desiredTime = desiredDifficulty * this.timePerDifficulty;
 
     // scan through the acceptable difficulty ranges
     for (var offset = 1; offset <= this.maximumOffset; offset++) {
@@ -205,6 +235,12 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
         // scan through each goal at this difficulty level
         for (var j = 0; j < goalsAtTime.length; j++) {
             var goal = goalsAtTime[j];
+
+            // don't allow duplicates of goals
+            if (this.hasGoalOnBoard(goal)) {
+                continue;
+            }
+
             var synergies = this.checkLine(position, goal);
 
             if (this.maximumSynergy >= synergies.maxSynergy && synergies.minSynergy >= this.minimumSynergy) {
@@ -306,10 +342,7 @@ BingoGenerator.prototype.difficulty = function(i) {
     // Table5 controls the 5* part and Table1 controls the 1* part.
     value = 5 * e5 + e1;
 
-    if (this.mode == "short") {
-        value = Math.floor(value / 2);
-    } // if short mode, limit difficulty
-    else if (this.mode == "long") {
+    if (this.mode == "long") {
         value = Math.floor((value + 25) / 2);
     }
     value++;
@@ -345,6 +378,23 @@ BingoGenerator.prototype.getGoalsInTimeRange = function(minTime, maxTime) {
     return this.goalsList.filter(function(goal) {
         return minTime <= goal.time && goal.time <= maxTime;
     });
+};
+
+/**
+ * Returns true if the given goal has already been placed on the board.
+ * Does so by checking against the ids of goals already on the board. Therefore relies on
+ * different goals having different id fields.
+ * @param goal  the goal to check for
+ * @returns {boolean}  true if the goal is on the board, false otherwise
+ */
+BingoGenerator.prototype.hasGoalOnBoard = function(goal) {
+    for (var i = 1; i <= 25; i++) {
+        if (this.bingoBoard[i].id === goal.id) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 /**
@@ -428,6 +478,8 @@ BingoGenerator.prototype.getEffectiveTypeSynergiesForRow = function(row) {
  */
 BingoGenerator.prototype.evaluateSquares = function(squares) {
     // bail out if there are duplicate goals
+    // NOTE: keep this in addition to the duplicate checking from chooseGoalForPosition
+    // because this still detects cases from hardcoded boards for analysis
     var ids = squares.map(function(el) { return el.id; }).filter(function(el) { return el; });
     if (hasDuplicateStrings(ids)) {
         return TOO_MUCH_SYNERGY;
@@ -456,7 +508,7 @@ BingoGenerator.prototype.calculateSynergiesForSquares = function(squares) {
         this.mergeTypeSynergies(rowtypeSynergies, square.rowtypes);
 
         // can't add a time difference for squares that are empty (since it's undefined)
-        if (square.time !== undefined) {
+        if (square.time !== undefined && square.desiredTime !== undefined) {
             timeDifferences.push(square.desiredTime - square.time);
         }
     }
@@ -534,15 +586,33 @@ BingoGenerator.prototype.calculateEffectiveTypeSynergies = function(typeSynergie
 
     for (var type in typeSynergies) {
         var synergies = typeSynergies[type];
-        synergies.sortNumerically();
 
-        var effectiveSynergies = synergies.slice(0, synergies.length - 1);
+        var effectiveSynergies = this.filterSynergyValuesForType(type, synergies);
+
         if (effectiveSynergies.length > 0) {
             effectiveTypeSynergies[type] = effectiveSynergies;
         }
     }
 
     return effectiveTypeSynergies;
+};
+
+BingoGenerator.prototype.filterSynergyValuesForType = function(type, synergies) {
+    synergies.sortNumerically();
+
+    var filter = this.synergyFilters[type] || "";
+    if (filter.startsWith("min")) {
+        var count = Number(filter.split(" ")[1]);
+        return synergies.slice(0, count);
+    }
+    else if (filter.startsWith("max")) {
+        var count = Number(filter.split(" ")[1]);
+        synergies.reverse();
+        return synergies.slice(0, count);
+    }
+    else {
+        return synergies.slice(0, -1);
+    }
 };
 
 // given aggregated type synergies for the row, calculates the effective synergy for that row
@@ -608,5 +678,5 @@ module.exports = function (bingoList, opts) {
 
     card["meta"] = {iterations: iterations};
 
-    return card;
+    return card.slice(1);  // Make 0-indexed
 };
