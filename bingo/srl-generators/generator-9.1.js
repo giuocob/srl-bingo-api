@@ -601,11 +601,11 @@ BingoGenerator.prototype.filterSynergyValuesForType = function(type, synergies) 
     synergies.sortNumerically();
 
     var filter = this.synergyFilters[type] || "";
-    if (filter.startsWith("min")) {
+    if (/^min/.test(filter)) {
         var count = Number(filter.split(" ")[1]);
         return synergies.slice(0, count);
     }
-    else if (filter.startsWith("max")) {
+    else if (/^max/.test(filter)) {
         var count = Number(filter.split(" ")[1]);
         synergies.reverse();
         return synergies.slice(0, count);
